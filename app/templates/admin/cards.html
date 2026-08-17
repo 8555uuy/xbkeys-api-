@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-credit-card-2-front"></i> 卡密管理</h4>
+    <a class="btn btn-outline-success px-3" href="/admin/cards/export{{ filter_query }}">
+        <i class="bi bi-download"></i> 导出 CSV
+    </a>
+</div>
+
+<!-- 筛选 -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><i class="bi bi-funnel"></i> 筛选与搜索</div>
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-2">
+                <select name="user" class="form-select">
+                    <option value="">全部用户</option>
+                    {% for u in users %}
+                    <option value="{{ u.id }}" {% if filter_user == u.id|string %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">全部类型</option>
+                    {% for t in types %}
+                    <option value="{{ t.id }}" {% if filter_type == t.id|string %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="unused" {% if filter_status == 'unused' %}selected{% endif %}>未使用</option>
+                    <option value="used" {% if filter_status == 'used' %}selected{% endif %}>已使用</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="q" class="form-control" placeholder="搜索卡密编码" value="{{ filter_q }}">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary flex-fill"><i class="bi bi-search"></i> 查询</button>
+                <a class="btn btn-outline-secondary flex-fill" href="/admin/cards">重置</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 手动 / 批量生成 -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> 手动 / 批量生成（管理员不受每日上限限制）</div>
+    <div class="card-body">
+        <form method="post" action="/admin/cards/generate" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">生成数量（1-500）</label>
+                <input type="number" class="form-control" name="count" min="1" max="500" value="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">卡密类型</label>
+                <select name="type_id" class="form-select" required>
+                    {% for t in types %}
+                    <option value="{{ t.id }}">{{ t.name }}{% if t.duration_days == 0 %}（永久）{% elif t.duration_days %}（{{ t.duration_days }} 天）{% endif %}</option>
+                    {% else %}
+                    <option value="" disabled>请先添加类型</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">归属用户</label>
+                <select name="owner_id" class="form-select">
+                    <option value="0">不指定用户</option>
+                    {% for u in users %}
+                    <option value="{{ u.id }}">{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">到期时间</label>
+                <input type="datetime-local" class="form-control" name="expires_at">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-brand w-100" {% if not types %}disabled{% endif %}>
+                    <i class="bi bi-magic"></i> 生成
+                </button>
+            </div>
+            <div class="col-12"><small class="text-secondary">到期时间选填，留空则按类型有效期自动计算。</small></div>
+        </form>
+    </div>
+</div>
+
+<!-- 卡密列表 -->
+<div class="card shadow-sm">
+    <div class="card-header">卡密列表（共 {{ total }} 条）</div>
+    <div class="card-body p-0">
+        <form method="post" action="/admin/cards/delete">
+            <table class="table table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:36px;"><input type="checkbox" id="checkAll" class="form-check-input"></th>
+                        <th>卡密编码</th>
+                        <th>类型</th>
+                        <th>归属用户</th>
+                        <th>状态</th>
+                        <th>到期时间</th>
+                        <th>使用设备</th>
+                        <th>使用IP</th>
+                        <th>生成时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in cards %}
+                    <tr>
+                        <td><input type="checkbox" class="row-check form-check-input" name="card_ids" value="{{ c.id }}"></td>
+                        <td><code class="code-text">{{ c.code }}</code></td>
+                        <td>{{ c.card_type.name if c.card_type else '-' }}</td>
+                        <td>{{ c.owner.username if c.owner else '-' }}</td>
+                        <td>
+                            {% if c.status == 'used' %}
+                            <span class="badge badge-soft-secondary">已使用</span>
+                            {% elif c.expires_at and c.expires_at < now %}
+                            <span class="badge badge-soft-danger">已过期</span>
+                            {% else %}
+                            <span class="badge badge-soft-success">未使用</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">
+                            {% if c.expires_at %}
+                            {{ c.expires_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            <span class="text-secondary">永久</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-secondary" title="{{ c.used_ua }}">{{ c.used_device if c.used_device else '-' }}</td>
+                        <td class="small text-secondary">{{ c.used_ip if c.used_ip else '-' }}</td>
+                        <td class="text-muted small">{{ c.generated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="9"><div class="empty-state"><i class="bi bi-inbox"></i>暂无卡密</div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <button class="btn btn-danger btn-sm px-3" type="submit"
+                        onclick="return confirm('确认删除选中的卡密？此操作不可恢复！')">
+                    <i class="bi bi-trash"></i> 删除选中
+                </button>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ page_url(page - 1) }}">上一页</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">第 {{ page }} / {{ pages }} 页</span>
+                        </li>
+                        <li class="page-item {% if page >= pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ page_url(page + 1) }}">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('checkAll').addEventListener('change', function () {
+    document.querySelectorAll('.row-check').forEach(function (cb) {
+        cb.checked = this.checked;
+    }, this);
+});
+</script>
+{% endblock %}

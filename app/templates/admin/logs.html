@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-clock-history"></i> 操作日志</h4>
+</div>
+
+<!-- 筛选 -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="action" class="form-select">
+                    <option value="">全部操作类型</option>
+                    {% for a in actions %}
+                    <option value="{{ a }}" {% if filter_action == a %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="username" class="form-control" placeholder="按用户名搜索" value="{{ filter_username }}">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary"><i class="bi bi-search"></i> 查询</button>
+                <a class="btn btn-outline-secondary" href="/admin/logs">重置</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">日志列表（共 {{ total }} 条）</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>时间</th>
+                    <th>用户</th>
+                    <th>操作</th>
+                    <th>详情</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for log in logs %}
+                <tr>
+                    <td class="text-muted">{{ log.id }}</td>
+                    <td class="text-muted small">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td class="fw-semibold">{{ log.username or '-' }}</td>
+                    <td>
+                        {% if log.action == 'login' %}<span class="badge badge-soft-success">登录</span>
+                        {% elif log.action == 'register' %}<span class="badge badge-soft-info">注册</span>
+                        {% elif log.action == 'logout' %}<span class="badge badge-soft-secondary">退出</span>
+                        {% elif log.action == 'generate' %}<span class="badge badge-soft-primary">生成卡密</span>
+                        {% elif log.action == 'verify' %}<span class="badge badge-soft-warning">验证</span>
+                        {% elif log.action == 'change_password' %}<span class="badge badge-soft-danger">修改密码</span>
+                        {% elif log.action == 'delete_card' %}<span class="badge badge-soft-danger">删除卡密</span>
+                        {% elif log.action == 'toggle_user' %}<span class="badge badge-soft-warning">用户状态</span>
+                        {% elif log.action == 'reset_password' %}<span class="badge badge-soft-danger">重置密码</span>
+                        {% elif log.action == 'save_type' %}<span class="badge badge-soft-primary">类型操作</span>
+                        {% elif log.action == 'delete_type' %}<span class="badge badge-soft-danger">删除类型</span>
+                        {% elif log.action == 'save_settings' %}<span class="badge badge-soft-info">系统设置</span>
+                        {% else %}<span class="badge badge-soft-secondary">{{ log.action }}</span>{% endif %}
+                    </td>
+                    <td class="small">{{ log.detail }}</td>
+                    <td class="text-muted small">{{ log.ip }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6"><div class="empty-state"><i class="bi bi-inbox"></i>暂无日志</div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="card-footer d-flex justify-content-end">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(page - 1) }}">上一页</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">第 {{ page }} / {{ pages }} 页</span>
+                    </li>
+                    <li class="page-item {% if page >= pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ page_url(page + 1) }}">下一页</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

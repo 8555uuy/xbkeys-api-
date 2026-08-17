@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-3">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-3 stat-icon-sm text-bg-primary"><i class="bi bi-code-square"></i></span>
+    <h4 class="mb-0">API 调用文档</h4>
+    <span class="badge badge-soft-primary ms-1">仅一个接口</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- 接口说明 -->
+        <div class="card shadow-sm doc-section">
+            <div class="card-header"><i class="bi bi-arrow-left-right"></i> 验证卡密接口</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge badge-soft-primary" style="font-size:0.9rem;">POST</span>
+                    <code class="code-text" style="font-size:1rem;">/api/verify</code>
+                </div>
+                <p class="small text-muted mb-2">请求与响应均为 <code>JSON</code> 格式。验证通过后将自动把该卡密标记为「已使用」，不可重复使用。本平台对外仅开放此一个接口。</p>
+                <div class="code-block">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span># 请求示例
+POST /api/verify HTTP/1.1
+Host: your-domain.com
+Content-Type: application/json
+
+{
+    "code": "KMS-XXXX-XXXX-XXXX-XXXX"
+}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数说明 -->
+        <div class="card shadow-sm doc-section">
+            <div class="card-header"><i class="bi bi-table"></i> 请求参数</div>
+            <div class="card-body p-0">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-text">code</code></td>
+                            <td>string</td>
+                            <td>是</td>
+                            <td class="small">卡密编码（大小写不敏感）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 响应说明 -->
+        <div class="card shadow-sm doc-section">
+            <div class="card-header"><i class="bi bi-box-arrow-down"></i> 响应字段</div>
+            <div class="card-body p-0">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code class="code-text">valid</code></td><td>boolean</td><td class="small">是否验证通过</td></tr>
+                        <tr><td><code class="code-text">code</code></td><td>string</td><td class="small">卡密编码</td></tr>
+                        <tr><td><code class="code-text">type_name</code></td><td>string</td><td class="small">卡密类型名称（如：月卡）</td></tr>
+                        <tr><td><code class="code-text">status</code></td><td>string</td><td class="small"><code class="code-text">not_found</code> 不存在 / <code class="code-text">expired</code> 已过期 / <code class="code-text">used</code> 已使用 / <code class="code-text">unused</code> 验证通过</td></tr>
+                        <tr><td><code class="code-text">expires_at</code></td><td>string</td><td class="small">到期时间（<code class="code-text">YYYY-MM-DD HH:MM:SS</code>，永久卡为空）</td></tr>
+                        <tr><td><code class="code-text">device</code></td><td>string</td><td class="small">使用方设备信息（操作系统 · 浏览器 · 端型）</td></tr>
+                        <tr><td><code class="code-text">message</code></td><td>string</td><td class="small">结果提示信息</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 返回示例 -->
+        <div class="card shadow-sm doc-section">
+            <div class="card-header"><i class="bi bi-card-text"></i> 返回示例</div>
+            <div class="card-body">
+                <h6 class="fw-bold">验证通过</h6>
+                <div class="code-block mb-4">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>HTTP/1.1 200 OK
+
+{
+    "valid": true,
+    "code": "KMS-XXXX-XXXX-XXXX-XXXX",
+    "type_name": "月卡",
+    "status": "unused",
+    "message": "验证通过，卡密已激活",
+    "expires_at": "2026-09-16 12:00:00",
+    "device": "Windows · Chrome · 桌面端"
+}</span>
+                </div>
+
+                <h6 class="fw-bold">已被使用</h6>
+                <div class="code-block mb-4">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>{
+    "valid": false,
+    "code": "KMS-XXXX-XXXX-XXXX-XXXX",
+    "type_name": "月卡",
+    "status": "used",
+    "message": "卡密已被使用"
+}</span>
+                </div>
+
+                <h6 class="fw-bold">已过期</h6>
+                <div class="code-block mb-4">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>{
+    "valid": false,
+    "code": "KMS-XXXX-XXXX-XXXX-XXXX",
+    "type_name": "月卡",
+    "status": "expired",
+    "message": "卡密已过期",
+    "expires_at": "2026-08-01 00:00:00"
+}</span>
+                </div>
+
+                <h6 class="fw-bold">卡密不存在</h6>
+                <div class="code-block mb-0">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>{
+    "valid": false,
+    "code": "KMS-XXXX-XXXX-XXXX-XXXX",
+    "status": "not_found",
+    "message": "卡密不存在"
+}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 调用示例 -->
+        <div class="card shadow-sm doc-section">
+            <div class="card-header"><i class="bi bi-terminal"></i> 代码调用示例</div>
+            <div class="card-body">
+                <h6 class="fw-bold">Python</h6>
+                <div class="code-block mb-4">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>import requests
+
+resp = requests.post(
+    "https://your-domain.com/api/verify",
+    json={"code": "KMS-XXXX-XXXX-XXXX-XXXX"}
+)
+data = resp.json()
+if data["valid"]:
+    print("激活成功，类型：", data["type_name"])
+else:
+    print("激活失败：", data["message"])</span>
+                </div>
+
+                <h6 class="fw-bold">curl</h6>
+                <div class="code-block mb-4">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>curl -X POST "https://your-domain.com/api/verify" \
+     -H "Content-Type: application/json" \
+     -d '{"code": "KMS-XXXX-XXXX-XXXX-XXXX"}'</span>
+                </div>
+
+                <h6 class="fw-bold">JavaScript</h6>
+                <div class="code-block mb-0">
+                    <button class="code-copy" onclick="copyCode(this)">复制</button>
+<span>fetch("https://your-domain.com/api/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: "KMS-XXXX-XXXX-XXXX-XXXX" })
+}).then(r => r.json()).then(data => {
+    console.log(data.valid ? "激活成功" : "激活失败：" + data.message);
+});</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧栏 -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><i class="bi bi-lightbulb"></i> 接入建议</div>
+            <div class="card-body small">
+                <p class="mb-2"><i class="bi bi-check-circle text-success"></i> 建议在服务端调用验证接口，不要在前端暴露卡密。</p>
+                <p class="mb-2"><i class="bi bi-check-circle text-success"></i> 验证接口同时完成「校验 + 激活」，无需额外步骤。</p>
+                <p class="mb-0"><i class="bi bi-exclamation-triangle text-warning"></i> 卡密激活后不可恢复，请确认业务成功后调用。</p>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><i class="bi bi-shield-lock"></i> 安全与限流</div>
+            <div class="card-body small">
+                <p class="mb-2"><i class="bi bi-x-circle text-danger"></i> 平台仅对外开放 <code>/api/verify</code> 一个接口，其余接口需登录后使用。</p>
+                <p class="mb-2"><i class="bi bi-hourglass-split text-warning"></i> 同一 IP 每分钟最多调用 <code>20</code> 次，超限将返回 <code>429 Too Many Requests</code>。</p>
+                <p class="mb-2"><i class="bi bi-diagram-3 text-secondary"></i> 登录 / 注册每分钟每 IP 最多 <code>10</code> 次，防止暴力破解。</p>
+                <p class="mb-0"><i class="bi bi-key text-secondary"></i> 请求头无需携带密钥，验证通过即自动激活卡密。</p>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header"><i class="bi bi-journal-bookmark"></i> 使用教程</div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">想了解如何在页面上生成与管理卡密？</p>
+                <a href="/guide" class="btn btn-outline-primary w-100"><i class="bi bi-arrow-right-circle"></i> 查看使用教程</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyCode(btn) {
+    const text = btn.parentElement.querySelector('span').innerText;
+    const done = function () {
+        btn.textContent = '已复制';
+        setTimeout(function () { btn.textContent = '复制'; }, 1600);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done);
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta); done();
+    }
+}
+</script>
+{% endblock %}

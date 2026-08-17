@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user %}
+<!-- 顶部统计 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-primary"><i class="bi bi-card-text"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="small text-secondary">卡密总数</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-success"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.unused }}</div>
+                <div class="small text-secondary">未使用</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-secondary"><i class="bi bi-x-circle"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.used }}</div>
+                <div class="small text-secondary">已使用</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-info"><i class="bi bi-lightning"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.today }}</div>
+                <div class="small text-secondary">今日生成</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 生成卡密 -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-plus-circle"></i> 生成卡密</div>
+            <div class="card-body">
+                {% if user.is_admin %}
+                <div class="alert alert-info py-2 small"><i class="bi bi-shield-check"></i> 管理员账号不受每日生成上限限制。</div>
+                {% else %}
+                <div class="mb-3">
+                    <div class="progress progress-thin mb-1" role="progressbar" aria-label="每日生成进度">
+                        <div class="progress-bar" style="width: {{ (today_count / daily_limit * 100) if daily_limit else 0 }}%;"></div>
+                    </div>
+                    <small class="text-secondary">今日已生成 {{ today_count }} / {{ daily_limit }}，剩余 {{ daily_limit - today_count }} 个</small>
+                </div>
+                {% endif %}
+
+                <form method="post" action="/generate">
+                    <label class="form-label fw-semibold">卡密类型</label>
+                    <div class="row g-2 mb-1">
+                        <div class="col-12 col-sm-7">
+                            <select class="form-select" name="type_id">
+                                <option value="0">选择已有类型</option>
+                                {% for t in types %}
+                                <option value="{{ t.id }}">{{ t.name }}{% if t.duration_days == 0 %}（永久）{% elif t.duration_days %}（{{ t.duration_days }} 天）{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <input type="text" class="form-control" name="custom_type" maxlength="20" placeholder="或输入自定义类型">
+                        </div>
+                    </div>
+                    <div class="form-text mb-3">可直接选择已有类型，或输入自定义类型名称（如：试用版）。</div>
+
+                    <label class="form-label fw-semibold">到期时间</label>
+                    <input type="datetime-local" class="form-control mb-1" name="expires_at">
+                    <div class="form-text mb-3">选填。留空则按所选类型的有效期自动计算；自定义类型默认 30 天。</div>
+
+                    <button class="btn btn-primary w-100 py-2" type="submit"><i class="bi bi-plus-circle"></i> 生成卡密</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近生成 -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history"></i> 最近生成的卡密</span>
+                <a href="/my-cards" class="btn btn-sm btn-outline-primary px-3">查看全部</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>卡密编码</th><th>类型</th><th>状态</th><th>生成时间</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for c in recent %}
+                        <tr>
+                            <td><code class="code-text">{{ c.code }}</code></td>
+                            <td>{{ c.card_type.name if c.card_type else '-' }}</td>
+                            <td>
+                                {% if c.status == 'used' %}
+                                <span class="badge badge-soft-secondary">已使用</span>
+                                {% else %}
+                                <span class="badge badge-soft-success">未使用</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-secondary small">{{ c.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <i class="bi bi-card-checklist"></i>
+                                    还没有卡密，使用左侧表单生成
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- 访客首屏 -->
+<section class="hero">
+    <span class="hero-badge"><i class="bi bi-lightning-charge-fill"></i> 自助生成 · 实时验证 · 安全可靠</span>
+    <h1>{{ site_name }}</h1>
+    <p class="lead">专业卡密生成与管理平台，注册即可一键生成、自定义类型、设置到期时间，并提供安全稳定的 API 验证接口。</p>
+    <div class="hero-cta mt-4">
+        <a href="/register" class="btn btn-brand btn-lg px-4 me-2">免费注册</a>
+        <a href="/login" class="btn btn-outline-secondary btn-lg px-4">登录</a>
+    </div>
+</section>
+
+<section class="row g-3">
+    <div class="col-md-3 col-6">
+        <div class="card feature-card">
+            <div class="feature-icon"><i class="bi bi-plus-circle"></i></div>
+            <h6 class="fw-semibold mb-1">一键生成</h6>
+            <p class="small text-secondary mb-0">选择或自定义类型，生成唯一卡密</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card feature-card">
+            <div class="feature-icon"><i class="bi bi-card-list"></i></div>
+            <h6 class="fw-semibold mb-1">状态管理</h6>
+            <p class="small text-secondary mb-0">随时查看编码、类型与使用状态</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card feature-card">
+            <div class="feature-icon"><i class="bi bi-code-square"></i></div>
+            <h6 class="fw-semibold mb-1">API 验证</h6>
+            <p class="small text-secondary mb-0">HTTP 接口自动校验并激活卡密</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card feature-card">
+            <div class="feature-icon"><i class="bi bi-shield-lock"></i></div>
+            <h6 class="fw-semibold mb-1">安全可靠</h6>
+            <p class="small text-secondary mb-0">卡密唯一且不可重复使用</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

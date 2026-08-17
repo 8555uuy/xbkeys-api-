@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-card-list"></i> 我的卡密</h4>
+    <a href="/" class="btn btn-brand btn-sm px-3"><i class="bi bi-plus-circle"></i> 生成新卡密</a>
+</div>
+
+<!-- 统计 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-primary"><i class="bi bi-card-text"></i></div>
+            <div><div class="stat-value">{{ stats.total }}</div><div class="text-muted small">卡密总数</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-success"><i class="bi bi-check-circle"></i></div>
+            <div><div class="stat-value">{{ stats.unused }}</div><div class="text-muted small">未使用</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-secondary"><i class="bi bi-x-circle"></i></div>
+            <div><div class="stat-value">{{ stats.used }}</div><div class="text-muted small">已使用</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-info"><i class="bi bi-share"></i></div>
+            <div><div class="stat-value small fw-bold">点击复制</div><div class="text-muted small">卡密编码</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>卡密列表（共 {{ cards|length }} 条）</span>
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <select name="status" class="form-select form-select-sm" style="width:130px;">
+                <option value="">全部状态</option>
+                <option value="unused" {% if filter_status == 'unused' %}selected{% endif %}>未使用</option>
+                <option value="used" {% if filter_status == 'used' %}selected{% endif %}>已使用</option>
+            </select>
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="搜索卡密编码" value="{{ filter_q }}" style="width:190px;">
+            <button class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            <a href="/my-cards" class="btn btn-sm btn-outline-secondary">重置</a>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>卡密编码</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>到期时间</th>
+                    <th>使用设备</th>
+                    <th>生成时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in cards %}
+                <tr>
+                    <td><code class="code-text" id="code-{{ c.id }}">{{ c.code }}</code></td>
+                    <td>{{ c.card_type.name if c.card_type else '-' }}</td>
+                    <td>
+                        {% if c.status == 'used' %}
+                        <span class="badge badge-soft-secondary"><i class="bi bi-check2"></i> 已使用</span>
+                        {% else %}
+                        <span class="badge badge-soft-success"><i class="bi bi-circle"></i> 未使用</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if c.expires_at %}
+                        {{ c.expires_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                        <span class="text-secondary">永久</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-secondary">{{ c.used_device if c.used_device else '-' }}</td>
+                    <td class="text-muted small">{{ c.generated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary px-3" onclick="copyCode({{ c.id }})">
+                            <i class="bi bi-clipboard"></i> 复制
+                        </button>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="bi bi-card-checklist"></i>
+                            {% if filter_status or filter_q %}没有符合条件的卡密，<a href="/my-cards" class="link-soft">清除筛选</a>{% else %}暂无卡密，<a href="/" class="link-soft">去首页生成一个</a>{% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyCode(id) {
+    const text = document.getElementById('code-' + id).innerText;
+    const done = function () { showToast('已复制：' + text); };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+    } else {
+        fallbackCopy(text);
+        done();
+    }
+}
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+}
+function showToast(msg) {
+    const box = document.createElement('div');
+    box.className = 'toast align-items-center text-bg-success border-0 show';
+    box.setAttribute('role', 'alert');
+    box.innerHTML = '<div class="d-flex"><div class="toast-body">' + msg + '</div>' +
+        '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+    const c = document.createElement('div');
+    c.className = 'toast-container position-fixed top-0 end-0 p-3';
+    c.appendChild(box);
+    document.body.appendChild(c);
+    setTimeout(function () { c.remove(); }, 2600);
+}
+</script>
+{% endblock %}

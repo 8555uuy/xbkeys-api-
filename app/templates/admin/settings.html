@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-gear"></i> 系统设置</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header"><i class="bi bi-sliders"></i> 基本设置</div>
+            <div class="card-body">
+                <form method="post" action="/admin/settings/save">
+                    <div class="mb-3">
+                        <label class="form-label">站点名称</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-globe2"></i></span>
+                            <input class="form-control" name="site_name" value="{{ site_name }}" required>
+                        </div>
+                        <div class="form-text">显示在页面标题和导航栏中。</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">普通用户每日生成卡密上限</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-stopwatch"></i></span>
+                            <input type="number" class="form-control" name="daily_limit" min="1" value="{{ daily_limit }}" required>
+                        </div>
+                        <div class="form-text">仅对普通用户生效，管理员不受限制。</div>
+                    </div>
+                    <button class="btn btn-brand px-4" type="submit"><i class="bi bi-check-circle"></i> 保存设置</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><i class="bi bi-info-circle"></i> 安全提示</div>
+            <div class="card-body small text-muted">
+                <p class="mb-2"><i class="bi bi-shield-exclamation"></i> 默认管理员账号密码请尽快在「个人中心」中修改。</p>
+                <p class="mb-2"><i class="bi bi-key"></i> 部署到生产环境前，请修改 <code class="code-text">app/config.py</code> 中的 <code class="code-text">SECRET_KEY</code>。</p>
+                <p class="mb-0"><i class="bi bi-database"></i> 数据库文件位于 <code class="code-text">data/card_system.db</code>，请定期备份。</p>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header"><i class="bi bi-clock-history"></i> 审计追踪</div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">系统已自动记录登录、注册、生成、验证与后台操作日志。</p>
+                <a href="/admin/logs" class="btn btn-outline-primary w-100"><i class="bi bi-clock-history"></i> 查看操作日志</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-speedometer2"></i> 仪表盘</h4>
+    <div class="d-flex gap-2">
+        <a href="/admin/cards" class="btn btn-sm btn-outline-primary px-3"><i class="bi bi-credit-card"></i> 卡密管理</a>
+        <a href="/admin/logs" class="btn btn-sm btn-outline-secondary px-3"><i class="bi bi-clock-history"></i> 操作日志</a>
+    </div>
+</div>
+
+<!-- 统计 -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-primary"><i class="bi bi-people"></i></div>
+            <div><div class="stat-value">{{ stats.total_users }}</div><div class="text-muted small">总用户数</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-info"><i class="bi bi-credit-card"></i></div>
+            <div><div class="stat-value">{{ stats.total_cards }}</div><div class="text-muted small">总卡密数</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-success"><i class="bi bi-person-plus"></i></div>
+            <div><div class="stat-value">{{ stats.today_users }}</div><div class="text-muted small">今日新增用户</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-warning"><i class="bi bi-lightning"></i></div>
+            <div><div class="stat-value">{{ stats.today_cards }}</div><div class="text-muted small">今日新增卡密</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-success"><i class="bi bi-check-circle"></i></div>
+            <div><div class="stat-value">{{ stats.unused }}</div><div class="text-muted small">未使用卡密</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon text-bg-secondary"><i class="bi bi-x-circle"></i></div>
+            <div><div class="stat-value">{{ stats.used }}</div><div class="text-muted small">已使用卡密</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 近7日趋势 -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><i class="bi bi-bar-chart-line"></i> 近 7 日卡密生成趋势</div>
+            <div class="card-body">
+                {% set max_v = (trend | map(attribute='count') | max) if trend else 1 %}
+                <div class="trend-chart">
+                    {% for t in trend %}
+                    <div class="trend-col" title="{{ t.label }}：{{ t.count }} 个">
+                        <div class="trend-value">{{ t.count }}</div>
+                        <div class="trend-bar" style="height: {{ (t.count / max_v * 100) if max_v else 0 }}%;"></div>
+                        <div class="trend-label">{{ t.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 活跃用户排行 -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><i class="bi bi-trophy"></i> 卡密数量 Top 5 用户</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead>
+                        <tr><th>#</th><th>用户名</th><th>卡密数量</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for (uid, name, cnt) in top_users %}
+                        <tr>
+                            <td>
+                                <span class="badge {{ 'text-bg-warning' if loop.index0 == 0 else 'text-bg-secondary' if loop.index0 == 1 else 'text-bg-primary' if loop.index0 == 2 else 'text-bg-light text-dark' }}">{{ loop.index }}</span>
+                            </td>
+                            <td>{{ name }}</td>
+                            <td class="fw-bold">{{ cnt }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3"><div class="empty-state"><i class="bi bi-trophy"></i>暂无数据</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近卡密 -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header">最近生成的卡密</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr><th>卡密编码</th><th>类型</th><th>归属用户</th><th>状态</th><th>生成时间</th></tr>
+            </thead>
+            <tbody>
+            {% for c in recent %}
+                <tr>
+                    <td><code class="code-text">{{ c.code }}</code></td>
+                    <td>{{ c.card_type.name if c.card_type else '-' }}</td>
+                    <td>{{ c.owner.username if c.owner else '-' }}</td>
+                    <td>
+                        {% if c.status == 'used' %}
+                        <span class="badge badge-soft-secondary">已使用</span>
+                        {% else %}
+                        <span class="badge badge-soft-success">未使用</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ c.generated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5"><div class="empty-state"><i class="bi bi-inbox"></i>暂无数据</div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

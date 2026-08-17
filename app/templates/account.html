@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-person-gear"></i> 个人中心</h4>
+</div>
+
+<div class="row g-4">
+    <!-- 账号信息 -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header"><i class="bi bi-person-vcard"></i> 账号信息</div>
+            <div class="card-body">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width:90px;">用户名</td>
+                            <td class="fw-semibold">{{ user.username }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">角色</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge badge-soft-danger"><i class="bi bi-shield-fill-check"></i> 管理员</span>
+                                {% else %}
+                                <span class="badge badge-soft-primary">普通用户</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">账号状态</td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge badge-soft-success">正常</span>
+                                {% else %}
+                                <span class="badge badge-soft-secondary">已禁用</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">注册时间</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">卡密数量</td>
+                            <td class="fw-bold">{{ card_count }} 个</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header"><i class="bi bi-key"></i> 修改密码</div>
+            <div class="card-body">
+                <form method="post" action="/account/change-password">
+                    <div class="mb-3">
+                        <label class="form-label">原密码</label>
+                        <input type="password" class="form-control" name="old_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密码（至少 6 位）</label>
+                        <input type="password" class="form-control" name="new_password" minlength="6" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">确认新密码</label>
+                        <input type="password" class="form-control" name="confirm" minlength="6" required>
+                    </div>
+                    <button class="btn btn-brand w-100" type="submit"><i class="bi bi-check-circle"></i> 修改密码</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近操作记录 -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header"><i class="bi bi-clock-history"></i> 最近操作记录</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>时间</th><th>操作</th><th>详情</th><th>IP</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for log in last_logs %}
+                        <tr>
+                            <td class="text-muted small">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                {% if log.action == 'generate' %}<span class="badge badge-soft-primary">生成卡密</span>
+                                {% elif log.action == 'login' %}<span class="badge badge-soft-success">登录</span>
+                                {% elif log.action == 'logout' %}<span class="badge badge-soft-secondary">退出</span>
+                                {% elif log.action == 'register' %}<span class="badge badge-soft-info">注册</span>
+                                {% elif log.action == 'verify' %}<span class="badge badge-soft-warning">验证</span>
+                                {% elif log.action == 'change_password' %}<span class="badge badge-soft-danger">修改密码</span>
+                                {% else %}<span class="badge badge-soft-secondary">{{ log.action }}</span>{% endif %}
+                            </td>
+                            <td class="small">{{ log.detail }}</td>
+                            <td class="text-muted small">{{ log.ip }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4"><div class="empty-state"><i class="bi bi-inbox"></i>暂无操作记录</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
