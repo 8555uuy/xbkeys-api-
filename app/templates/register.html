@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="card auth-card">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <div class="side-logo mx-auto mb-3" style="width:54px;height:54px;font-size:1.6rem;"><i class="bi bi-person-plus"></i></div>
+                <h5 class="fw-bold mb-1">创建账号</h5>
+                <div class="text-muted small">注册后即可自助生成卡密</div>
+            </div>
+            <form method="post" action="/register">
+                <div class="mb-3">
+                    <label class="form-label">用户名（3-20 个字符）</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input class="form-control" name="username" minlength="3" maxlength="20" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">密码（至少 6 位）</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" name="password" minlength="6" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">确认密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" class="form-control" name="confirm" minlength="6" required>
+                    </div>
+                </div>
+                <button class="btn btn-brand w-100 py-2" type="submit"><i class="bi bi-person-plus"></i> 注册并登录</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/" class="small text-secondary"><i class="bi bi-arrow-left"></i> 返回首页</a>
+            </div>
+        </div>
+        <div class="card-footer text-center small">
+            已有账号？<a href="/login" class="link-soft fw-semibold">去登录</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="card auth-card">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <div class="side-logo mx-auto mb-3" style="width:54px;height:54px;font-size:1.6rem;"><i class="bi bi-box-arrow-in-right"></i></div>
+                <h5 class="fw-bold mb-1">欢迎回来</h5>
+                <div class="text-muted small">登录 {{ site_name }}</div>
+            </div>
+            <form method="post" action="/login">
+                <div class="mb-3">
+                    <label class="form-label">用户名</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input class="form-control" name="username" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                </div>
+                <button class="btn btn-brand w-100 py-2" type="submit"><i class="bi bi-box-arrow-in-right"></i> 登录</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/" class="small text-secondary"><i class="bi bi-arrow-left"></i> 返回首页</a>
+            </div>
+        </div>
+        <div class="card-footer text-center small">
+            还没有账号？<a href="/register" class="link-soft fw-semibold">立即注册</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

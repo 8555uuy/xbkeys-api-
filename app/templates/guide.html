@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-journal-bookmark"></i> 使用教程</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- 用户教程 -->
+        <div class="card doc-section">
+            <div class="card-header"><i class="bi bi-person"></i> 用户操作</div>
+            <div class="card-body">
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">1</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">注册 / 登录</h6>
+                        <p class="text-secondary small mb-0">点击右上角「注册」，填写用户名与密码完成注册并自动登录。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">生成卡密</h6>
+                        <p class="text-secondary small mb-0">首页「生成卡密」中选择已有类型（如月卡），或直接输入自定义类型名称。普通用户受每日生成上限限制，管理员不受限制。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">查看与复制</h6>
+                        <p class="text-secondary small mb-0">「我的卡密」页可查看编码、类型、状态、到期时间与使用设备，支持按状态筛选、按编码搜索，点击「复制」一键复制。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">4</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">解绑 / 停用 / 删除</h6>
+                        <p class="text-secondary small mb-0">已使用的卡密可「解绑」恢复为未使用并清除设备信息；未使用的卡密可「停用」（停用后无法验证）或「删除」。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <span class="step-badge">5</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">仪表盘</h6>
+                        <p class="text-secondary small mb-0">「仪表盘」集中展示个人卡密统计、近 7 日生成趋势、最近操作与最近卡密，便于总览。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员教程 -->
+        <div class="card doc-section">
+            <div class="card-header"><i class="bi bi-shield-check"></i> 管理员操作</div>
+            <div class="card-body">
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">1</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">配置卡密类型</h6>
+                        <p class="text-secondary small mb-0">「管理后台 → 卡密类型管理」中添加月卡、季卡、年卡、永久等类型并设置有效期天数（0 表示永久）。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">生成与管理卡密</h6>
+                        <p class="text-secondary small mb-0">「管理后台 → 卡密管理」支持按用户、类型、状态、编码筛选，可手动 / 批量生成（不受每日上限限制）、批量删除、导出 CSV；每张卡密还可单独「解绑」（清除设备绑定）或「停用 / 启用」。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">用户管理</h6>
+                        <p class="text-secondary small mb-0">查看所有用户及其卡密数量，支持启用 / 禁用账号、重置密码。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
+                    <span class="step-badge">4</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">系统设置与日志</h6>
+                        <p class="text-secondary small mb-0">「系统设置」中可修改站点名称与普通用户每日生成上限；「操作日志」可审计全站登录、生成、验证与后台操作。</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <span class="step-badge">5</span>
+                    <div>
+                        <h6 class="fw-semibold mb-1">默认管理员</h6>
+                        <p class="text-secondary small mb-0">首次启动自动创建管理员账号 <code class="code-text">admin</code>，登录后请立即修改密码。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态说明 -->
+        <div class="card doc-section">
+            <div class="card-header"><i class="bi bi-info-circle"></i> 卡密状态说明</div>
+            <div class="card-body">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr><th>状态</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-soft-success">未使用</span></td>
+                            <td class="small">卡密尚未被验证，可正常使用。</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-soft-secondary">已使用</span></td>
+                            <td class="small">卡密已被 <code class="code-text">/api/verify</code> 成功验证并激活，绑定使用方设备，可解绑后重新使用。</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-soft-danger">已停用</span></td>
+                            <td class="small">管理员或用户手动停用，停用后 <code class="code-text">/api/verify</code> 将返回「卡密已停用」，可重新启用。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧栏 -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-question-circle"></i> 常见问题</div>
+            <div class="card-body small">
+                <p class="mb-3"><strong>Q：生成的卡密别人能用吗？</strong><br>
+                可以。卡密是通用激活码，任何人通过验证 API 校验后即被使用。</p>
+                <p class="mb-3"><strong>Q：每日上限是多少？</strong><br>
+                默认 50 个 / 天，管理员可在「系统设置」中调整；管理员账号不受限制。</p>
+                <p class="mb-0"><strong>Q：自定义类型会保留吗？</strong><br>
+                会。自定义类型会自动保存为系统类型，其他用户也可选用。</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="bi bi-code-square"></i> 接入验证</div>
+            <div class="card-body">
+                <p class="small text-secondary mb-3">查看验证接口的请求方式、参数与返回说明。</p>
+                <a href="/api-docs" class="btn btn-primary w-100">前往 API 文档</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
